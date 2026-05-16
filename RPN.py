@@ -1,7 +1,7 @@
 import math as m
 
 
-def evaluate(rpn, memory):
+def evaluate(rpn, memory, ans):
     stack = []
 
     func_map = {
@@ -26,8 +26,14 @@ def evaluate(rpn, memory):
                 stack.append(value)
         elif ttype == "FACT":
             stack.append(m.factorial(int(stack.pop())))
+        elif ttype == "ANS":
+            stack.append(ans)
         elif ttype == "VAR":
             stack.append(memory[value])
+        elif ttype == "MPLUS":
+            memory["M"] += stack.pop()
+        elif ttype == "MMINUS":
+            memory["M"] -= stack.pop()
         elif ttype == "STORE":
             memory[value] = stack.pop()
             stack.append(memory[value])

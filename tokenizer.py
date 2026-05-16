@@ -1,3 +1,6 @@
+import math as m
+
+
 def tokenize(equation):
     tokens = []
     i = 0
@@ -47,22 +50,40 @@ def tokenize(equation):
             while i < len(equation) and equation[i].isalpha() and equation[i].islower():
                 func_string += equation[i]
                 i += 1
-            if equation[i].isupper() and (
-                func_string == "store" or func_string == "recall"
+            if (
+                i < len(equation)
+                and equation[i].isupper()
+                and (func_string == "store" or func_string == "recall")
             ):
                 variable = equation[i]
                 i += 1
                 tokens.append(
                     ("STORE" if func_string == "store" else "RECALL", variable)
                 )
-            elif equation[i].isupper():
-                variable = equation[i]
-                i += 1
-                tokens.append(("VAR", variable))
+            elif i < len(equation) and equation[i].isupper():
+                if (
+                    char == "M"
+                    and i + 1 < len(equation)
+                    and equation[i + 1] in ("+", "-")
+                ):
+                    variable = equation[i]
+                    op = equation[i + 1]
+                    i += 2
+                    tokens.append(("MPLUS" if op == "+" else "MMINUS", "M"))
+                else:
+                    variable = equation[i]
+                    i += 1
+                    tokens.append(("VAR", variable))
             elif func_string == "ncr":
                 tokens.append(("NCR", "ncr"))
             elif func_string == "npr":
                 tokens.append(("NPR", "npr"))
+            elif func_string == "pi":
+                tokens.append(("NUMBER", m.pi))
+            elif func_string == "e":
+                tokens.append(("NUMBER", m.e))
+            elif func_string == "ans":
+                tokens.append(("ANS", "ans"))
             else:
                 tokens.append(("FUNC", func_string))
             continue

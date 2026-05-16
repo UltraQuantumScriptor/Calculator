@@ -48,10 +48,16 @@ def parse(tokens):
         elif ttype == "FUNC":
             output.append(("FUNC", value))
 
+        elif ttype == "ANS":
+            output.append(("ANS", "ans"))
+
         elif ttype == "VAR":
             output.append(("VAR", value))
 
         elif ttype in ("STORE", "RECALL"):
+            output.append((ttype, value))
+
+        elif ttype in ("MPLUS", "MMINUS"):
             output.append((ttype, value))
 
     while ops:
