@@ -5,9 +5,12 @@ def parse(tokens):
     prec = {
         "PLUS": 1,
         "MINUS": 1,
-        "MULTIPLY": 2,
-        "DIVIDE": 2,
-        "POW": 3,
+        "NCR": 2,
+        "NPR": 2,
+        "MULTIPLY": 3,
+        "DIVIDE": 3,
+        "POW": 4,
+        "UMINUS": 5,
     }
 
     for token in tokens:
@@ -20,7 +23,11 @@ def parse(tokens):
             while ops:
                 top = ops[-1]
 
-                if top in prec and prec[top] >= prec[ttype]:
+                if (
+                    top in prec
+                    and prec[top] >= prec[ttype]
+                    and ttype not in ("POW", "UMINUS")
+                ):
                     output.append(("OP", ops.pop()))
                 else:
                     break
@@ -34,6 +41,18 @@ def parse(tokens):
             while ops and ops[-1] != "LPAREN":
                 output.append(("OP", ops.pop()))
             ops.pop()  # remove LPAREN
+
+        elif ttype == "FACT":
+            output.append(("FACT", value))
+
+        elif ttype == "FUNC":
+            output.append(("FUNC", value))
+
+        elif ttype == "VAR":
+            output.append(("VAR", value))
+
+        elif ttype in ("STORE", "RECALL"):
+            output.append((ttype, value))
 
     while ops:
         output.append(("OP", ops.pop()))
