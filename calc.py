@@ -18,6 +18,8 @@ print("The types of Memory cells include: A,B,C,D,E,F,M,X,Y")
 print("Factorial: X!")
 print("Variables: A+1 (use stored memory cells directly in expressions)")
 print("Use the keyword 'ans' to use the result of the previous answer ")
+print("M+, M-: 5 M+")
+
 memory = {"A": 0, "B": 0, "C": 0, "D": 0, "E": 0, "F": 0, "M": 0, "X": 0, "Y": 0}
 ans = 0
 while True:
@@ -26,14 +28,8 @@ while True:
     if equation == "exit":
         exit()
 
-    with open("raw_string.txt", "w") as file:
-        file.write(equation)
-
-    with open("raw_string.txt", "r") as file:
-        raw_string = file.read()
-
     try:
-        tokens = tokenize(raw_string)
+        tokens = tokenize(equation)
         parsed = parse(tokens)
 
         def debug():
