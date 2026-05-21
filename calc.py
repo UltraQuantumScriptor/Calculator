@@ -1,24 +1,41 @@
 from tokenizer import tokenize
 from parser import parse
 from RPN import evaluate
-from os import system
+from os import system, name
 
-system("cls")
+system("cls" if name == "nt" else "clear")
 print("Type 'exit' to exit the program")
-print("Operators: + - * / ^")
-print("Trig: sin, cos, tan (degrees)")
-print("Inverse trig: asin, acos, atan (returns degrees)")
-print("Logarithms: log (base10), ln (natural log)")
-print("Negative numbers: -3, --3")
-print("Parentheses: (2+3)*4")
-print("Type x ncr y, or x npr y for permutations(lower case)")
-print("Use: X storeY to store a value in the memory cell")
-print("Use: X recallY to recall the stored value in the memory cell(0 by default)")
-print("The types of Memory cells include: A,B,C,D,E,F,M,X,Y")
-print("Factorial: X!")
-print("Variables: A+1 (use stored memory cells directly in expressions)")
-print("Use the keyword 'ans' to use the result of the previous answer ")
-print("M+, M-: 5 M+")
+print("Type 'guide' to print a basic guide for this calculator")
+
+
+def guide():
+    CYAN = "\033[36m"
+    GREEN = "\033[32m"
+    YELLOW = "\033[33m"
+    MAGENTA = "\033[35m"
+    RESET = "\033[0m"
+
+    print(f"\n{CYAN}===== Calculator Guide ====={RESET}\n")
+
+    print(f"{GREEN}Operators:{RESET} + - * / ^")
+    print(f"{GREEN}Trig:{RESET} sin, cos, tan (degrees)")
+    print(f"{GREEN}Inverse trig:{RESET} asin, acos, atan")
+    print(f"{GREEN}Logarithms:{RESET} log, ln")
+    print(f"{GREEN}Negative numbers:{RESET} -3, --3")
+    print(f"{GREEN}Parentheses:{RESET} (2+3)*4")
+
+    print(f"{YELLOW}Combinatorics:{RESET} x ncr y, x npr y")
+
+    print(f"{MAGENTA}Memory Store:{RESET} X storeY")
+    print(f"{MAGENTA}Memory Recall:{RESET} X recallY")
+
+    print(f"{MAGENTA}Memory Cells:{RESET} A,B,C,D,E,F,M,X,Y")
+
+    print(f"{GREEN}Factorial:{RESET} X!")
+    print(f"{GREEN}Variables:{RESET} A+1")
+    print(f"{GREEN}Previous Answer:{RESET} ans")
+    print(f"{GREEN}Memory Add/Subtract:{RESET} M+, M-")
+
 
 memory = {"A": 0, "B": 0, "C": 0, "D": 0, "E": 0, "F": 0, "M": 0, "X": 0, "Y": 0}
 ans = 0
@@ -38,17 +55,28 @@ while True:
 
         # debug()
 
-        evaluated = evaluate(parsed, memory, ans)
+        evaluated = evaluate(parsed, memory, ans, guide)
         if evaluated:
-            print(f"= {evaluated[0]:0.10g}")
-            ans = evaluated[0]
+            try:
+                print(f"= {evaluated[0]:0.10g}")
+                ans = evaluated[0]
+            except OverflowError:
+                print(evaluated[0])
         else:
-            print("= 0")
+            if equation not in ("guide"):
+                print("= 0")
     except ZeroDivisionError:
         print("Math Error: Zero Division")
     except ValueError as e:
-        print(f"Error: {e}")
+        if "math domain error" in str(e):
+            print("Math Error: Math domain error")
+        else:
+            print(f"Math Error: {e}")
     except NameError as e:
         print(f"Error: {e}")
-    # except IndexError:
-    #     print("Invalid expression")
+    except OverflowError:
+        print(float("inf"))
+    except IndexError:
+        print("Invalid expression")
+    except KeyError as e:
+        print(f"Unkown function: {e}")

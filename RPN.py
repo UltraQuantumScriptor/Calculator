@@ -1,7 +1,7 @@
 import math as m
 
 
-def evaluate(rpn, memory, ans):
+def evaluate(rpn, memory, ans, guide):
     stack = []
 
     func_map = {
@@ -13,6 +13,7 @@ def evaluate(rpn, memory, ans):
         "atan": lambda x: m.degrees(m.atan(x)),
         "log": lambda x: m.log10(x),
         "ln": lambda x: m.log(x),
+        "guide": guide,
     }
     for token in rpn:
         ttype, value = token
@@ -36,8 +37,12 @@ def evaluate(rpn, memory, ans):
         elif ttype == "RECALL":
             stack.append(memory[value])
         elif ttype == "FUNC":
-            number = stack.pop()
-            stack.append(func_map[value](number))
+            if value == "guide":
+                func_map["guide"]()
+                return None
+            else:
+                number = stack.pop()
+                stack.append(func_map[value](number))
 
         elif ttype == "OP":
             if value == "UMINUS":
@@ -45,7 +50,8 @@ def evaluate(rpn, memory, ans):
             else:
 
                 if len(stack) < 2:
-                    raise ValueError(f"Invalid RPN: stack too small at {token}.")
+                    # raise ValueError(f"Invalid RPN: stack too small at {token}.")
+                    raise ValueError(f"Invalid Expression for {token[1]}")
                 b = stack.pop()
                 a = stack.pop()
 
