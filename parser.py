@@ -22,20 +22,24 @@ def parse(tokens):
         elif ttype in prec:
             while ops:
                 top = ops[-1]
+                top_ttype = top[0] if isinstance(top, tuple) else top
 
                 if (
                     top in prec
                     and prec[top] >= prec[ttype]
                     and ttype not in ("POW", "UMINUS")
+                    and top_ttype != "UMINUS"
                 ):
-                    output.append(("OP", ops.pop()))
+                    output.append(
+                        ops.pop() if isinstance(top, tuple) else ("OP", ops.pop())
+                    )
                 else:
                     break
 
             ops.append(ttype)
 
         elif ttype == "LPAREN":
-            ops.append(ttype)
+            ops.append(("OP", ttype))
 
         elif ttype == "RPAREN":
             while ops and ops[-1] != "LPAREN":
@@ -46,7 +50,7 @@ def parse(tokens):
             output.append(("FACT", value))
 
         elif ttype == "FUNC":
-            output.append(("FUNC", value))
+            ops.append(("FUNC", value))
 
         elif ttype == "ANS":
             output.append(("ANS", "ans"))
@@ -61,6 +65,10 @@ def parse(tokens):
             output.append((ttype, value))
 
     while ops:
-        output.append(("OP", ops.pop()))
+        top = ops.pop()
+        if isinstance(top, tuple):
+            output.append(top)
+        else:
+            output.append(("OP", top))
 
     return output

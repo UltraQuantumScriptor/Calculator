@@ -36,7 +36,7 @@ while True:
             print("tokenized:", tokens)
             print("parsed:", parsed)
 
-        debug()
+        # debug()
 
         evaluated = evaluate(parsed, memory, ans)
         if evaluated:

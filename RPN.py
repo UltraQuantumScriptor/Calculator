@@ -19,11 +19,7 @@ def evaluate(rpn, memory, ans):
         if value == "exit":
             exit()
         if ttype == "NUMBER":
-            if len(stack) != 0 and stack[-1] in func_map:
-                func = func_map[stack.pop()]
-                stack.append(func(value))
-            else:
-                stack.append(value)
+            stack.append(value)
         elif ttype == "FACT":
             stack.append(m.factorial(int(stack.pop())))
         elif ttype == "ANS":
@@ -40,7 +36,8 @@ def evaluate(rpn, memory, ans):
         elif ttype == "RECALL":
             stack.append(memory[value])
         elif ttype == "FUNC":
-            stack.append(value)
+            number = stack.pop()
+            stack.append(func_map[value](number))
 
         elif ttype == "OP":
             if value == "UMINUS":
