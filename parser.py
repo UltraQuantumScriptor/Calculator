@@ -39,7 +39,8 @@ def parse(tokens):
             ops.append(ttype)
 
         elif ttype == "LPAREN":
-            ops.append(("OP", ttype))
+            # ops.append(("OP", ttype))
+            ops.append(ttype)
 
         elif ttype == "RPAREN":
             while ops and ops[-1] != "LPAREN":

@@ -1,5 +1,16 @@
 import math as m
 
+calc_list = (
+    "sin",
+    "cos",
+    "tan",
+    "asin",
+    "acos",
+    "atan",
+    "log",
+    "ln",
+)
+
 
 def tokenize(equation):
     tokens = []
@@ -45,12 +56,16 @@ def tokenize(equation):
             tokens.append(("RPAREN", ")"))
         elif char == "!":
             tokens.append(("FACT", "!"))
+
         elif char.isalpha():
             func_string = ""
             while i < len(equation) and equation[i].isalpha() and equation[i].islower():
                 func_string += equation[i]
                 i += 1
-            if (
+            if func_string in calc_list:
+                tokens.append(("FUNC", func_string))
+                continue
+            elif (
                 i < len(equation)
                 and equation[i].isupper()
                 and (func_string == "store" or func_string == "recall")

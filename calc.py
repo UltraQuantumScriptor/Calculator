@@ -3,9 +3,15 @@ from parser import parse
 from RPN import evaluate
 from os import system, name
 
-system("cls" if name == "nt" else "clear")
-print("Type 'exit' to exit the program")
-print("Type 'guide' to print a basic guide for this calculator")
+
+def boot_up_actions():
+    system("cls" if name == "nt" else "clear")
+    print("Type 'exit' to exit the program")
+    print("Type 'clear' to clear the terminal")
+    print("Type 'guide' to print a basic guide for this calculator")
+
+
+boot_up_actions()
 
 
 def guide():
@@ -44,6 +50,9 @@ while True:
     equation = input("\n> ")
     if equation == "exit":
         exit()
+    if equation == "clear":
+        boot_up_actions()
+        continue
 
     try:
         tokens = tokenize(equation)
@@ -53,7 +62,7 @@ while True:
             print("tokenized:", tokens)
             print("parsed:", parsed)
 
-        # debug()
+        debug()
 
         evaluated = evaluate(parsed, memory, ans, guide)
         if evaluated:
