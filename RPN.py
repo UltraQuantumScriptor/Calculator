@@ -1,7 +1,9 @@
 import math as m
 
 
-def evaluate(rpn, memory, ans, guide):
+def evaluate(rpn, memory, ans, guide, debug_mode=False):
+    if debug_mode:
+        print("RPN Stack Track:\n")
     stack = []
 
     func_map = {
@@ -15,7 +17,7 @@ def evaluate(rpn, memory, ans, guide):
         "ln": lambda x: m.log(x),
         "guide": guide,
     }
-    for token in rpn:
+    for debug_num, token in enumerate(rpn):
         ttype, value = token
         if value == "exit":
             exit()
@@ -29,8 +31,10 @@ def evaluate(rpn, memory, ans, guide):
             stack.append(memory[value])
         elif ttype == "MPLUS":
             memory["M"] += stack.pop()
+            stack.append(memory["M"])
         elif ttype == "MMINUS":
             memory["M"] -= stack.pop()
+            stack.append(memory["M"])
         elif ttype == "STORE":
             memory[value] = stack.pop()
             stack.append(memory[value])
@@ -82,5 +86,9 @@ def evaluate(rpn, memory, ans, guide):
                 elif value == "NPR":
                     result = m.perm(int(a), int(b))
                     stack.append(result)
+        if debug_mode:
+            print(f"{debug_num}  {token} → {stack}")
 
+    if len(stack) > 1:
+        raise SyntaxError("Invalid expression")
     return stack

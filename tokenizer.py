@@ -18,6 +18,13 @@ def tokenize(equation):
     while i < len(equation):
         char = equation[i]
 
+        if (
+            tokens
+            and tokens[-1][0] in ("NUMBER", "RPAREN", "FACT")
+            and (char == "(" or char.isalpha())
+        ):
+            tokens.append(("MULTIPLY", "*"))
+
         if char.isdigit():
             num_string = ""
             while i < len(equation) and (equation[i].isdigit() or equation[i] == "."):
