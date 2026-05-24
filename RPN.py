@@ -2,18 +2,21 @@ import math as m
 import statistics as s
 
 
-def evaluate(rpn, memory, ans, guide, debug_mode=False, n=[], STAT=False):
+def evaluate(rpn, memory, ans, guide, debug_mode=False, n=[], STAT=False, deg=True):
     if debug_mode:
         print("RPN Stack Track:\n")
     stack = []
 
+    to_rad = (m.pi / 180) if deg else 1
+    from_rad = (180 / m.pi) if deg else 1
+
     func_map = {
-        "sin": lambda x: m.sin(m.radians(x)),
-        "cos": lambda x: m.cos(m.radians(x)),
-        "tan": lambda x: m.tan(m.radians(x)),
-        "asin": lambda x: m.degrees(m.asin(x)),
-        "acos": lambda x: m.degrees(m.acos(x)),
-        "atan": lambda x: m.degrees(m.atan(x)),
+        "sin": lambda x: m.sin(x * to_rad),
+        "cos": lambda x: m.cos(x * to_rad),
+        "tan": lambda x: m.tan(x * to_rad),
+        "asin": lambda x: m.asin(x) * from_rad,
+        "acos": lambda x: m.acos(x) * from_rad,
+        "atan": lambda x: m.atan(x) * from_rad,
         "log": lambda x: m.log10(x),
         "ln": lambda x: m.log(x),
         "guide": guide,
@@ -75,7 +78,7 @@ def evaluate(rpn, memory, ans, guide, debug_mode=False, n=[], STAT=False):
                     print(f"{cell}: {num}")
             else:
                 number = stack.pop()
-                if value == "tan":
+                if value == "tan" and deg:
                     if abs(number % 180 - 90) < 1e-9:
                         raise ValueError("tan(90) is undefined")
                 stack.append(func_map[value](number))

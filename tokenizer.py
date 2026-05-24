@@ -23,10 +23,12 @@ stat_list = (
 def is_command(equation, i):
     word = ""
     j = i
-    while j < len(equation) and equation[j].isalpha() and equation[j].islower():
+    while j < len(equation) and (
+        equation[j].isalpha() and equation[j].islower() or equation[j].isdigit()
+    ):
         word += equation[j]
         j += 1
-    return word in ("sto", "rcl", "ncr", "npr", "ans")
+    return word in ("sto", "rcl", "ncr", "npr", "ans", "x10")
 
 
 def tokenize(equation, n=[]):
@@ -132,6 +134,27 @@ def tokenize(equation, n=[]):
                     variable = equation[i]
                     i += 1
                     tokens.append(("VAR", variable))
+            elif (
+                func_string == "x"
+                and i < len(equation)
+                and equation[i] == "1"
+                and i + 1 < len(equation)
+                and equation[i + 1] == "0"
+            ):
+                i += 2
+                exp_string = ""
+                while i < len(equation) and equation[i].isspace():
+                    i += 1
+                if i < len(equation) and equation[i] in ("+", "-"):
+                    exp_string += equation[i]
+                    i += 1
+                while i < len(equation) and equation[i].isdigit():
+                    exp_string += equation[i]
+                    i += 1
+                exp = int(exp_string) if exp_string else 0
+
+                number = tokens.pop()
+                tokens.append(("NUMBER", (number[1] * (10**exp))))
             elif func_string == "ncr":
                 tokens.append(("NCR", "ncr"))
             elif func_string == "npr":
