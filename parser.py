@@ -25,10 +25,11 @@ def parse(tokens):
                 top_ttype = top[0] if isinstance(top, tuple) else top
 
                 if (
-                    top in prec
-                    and prec[top] >= prec[ttype]
+                    top_ttype in prec
+                    and prec[top_ttype] >= prec[ttype]
                     and ttype not in ("POW", "UMINUS")
                     and top_ttype != "UMINUS"
+                    and top_ttype != "FUNC"
                 ):
                     output.append(
                         ops.pop() if isinstance(top, tuple) else ("OP", ops.pop())
@@ -44,14 +45,23 @@ def parse(tokens):
 
         elif ttype == "RPAREN":
             while ops and ops[-1] != "LPAREN":
-                output.append(("OP", ops.pop()))
+                top = ops.pop()
+                if isinstance(top, tuple):
+                    output.append(top)
+                else:
+                    output.append(("OP", top))
             ops.pop()  # remove LPAREN
+            if ops and isinstance(ops[-1], tuple) and ops[-1][0] == "FUNC":
+                output.append(ops.pop())
 
         elif ttype == "FACT":
             output.append(("FACT", value))
 
         elif ttype == "FUNC":
             ops.append(("FUNC", value))
+
+        elif ttype == "STAT_FUNC":
+            output.append(("STAT_FUNC", value))
 
         elif ttype == "ANS":
             output.append(("ANS", "ans"))

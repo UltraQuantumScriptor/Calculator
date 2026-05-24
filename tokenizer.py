@@ -1,6 +1,6 @@
 import math as m
 
-calc_list = (
+comp_list = (
     "sin",
     "cos",
     "tan",
@@ -11,17 +11,44 @@ calc_list = (
     "ln",
 )
 
+stat_list = (
+    "mean",
+    "sumx",
+    "sumx2",
+    "sdev",
+    "sdev1",
+)
 
-def tokenize(equation):
+
+def is_command(equation, i):
+    word = ""
+    j = i
+    while j < len(equation) and equation[j].isalpha() and equation[j].islower():
+        word += equation[j]
+        j += 1
+    return word in ("sto", "rcl", "ncr", "npr", "ans")
+
+
+def tokenize(equation, n=[]):
     tokens = []
     i = 0
     while i < len(equation):
         char = equation[i]
 
+        if tokens and tokens[-1][0] == "FUNC" and char != "(":
+            raise SyntaxError("Functions MUST have parenthesis")
+
+        # if char.isalpha():
+        #     print(f"is_command check: '{char}' → {is_command(equation, i)}")
+
         if (
             tokens
-            and tokens[-1][0] in ("NUMBER", "RPAREN", "FACT")
+            and tokens[-1][0] in ("NUMBER", "RPAREN", "FACT", "VAR")
             and (char == "(" or char.isalpha())
+            and not (
+                char == "M" and i + 1 < len(equation) and equation[i + 1] in ("+", "-")
+            )
+            and not is_command(equation, i)
         ):
             tokens.append(("MULTIPLY", "*"))
 
@@ -69,19 +96,28 @@ def tokenize(equation):
             while i < len(equation) and equation[i].isalpha() and equation[i].islower():
                 func_string += equation[i]
                 i += 1
-            if func_string in calc_list:
+
+            if i < len(equation) and equation[i].isdigit():
+                if func_string + equation[i] in stat_list:
+                    func_string += equation[i]
+                    i += 1
+
+            while i < len(equation) and equation[i].isspace():
+                i += 1
+            if func_string in comp_list:
                 tokens.append(("FUNC", func_string))
+                continue
+            elif func_string in stat_list:
+                tokens.append(("STAT_FUNC", func_string))
                 continue
             elif (
                 i < len(equation)
                 and equation[i].isupper()
-                and (func_string == "store" or func_string == "recall")
+                and (func_string in ("sto", "rcl"))
             ):
                 variable = equation[i]
                 i += 1
-                tokens.append(
-                    ("STORE" if func_string == "store" else "RECALL", variable)
-                )
+                tokens.append(("STORE" if func_string == "sto" else "RECALL", variable))
             elif i < len(equation) and equation[i].isupper():
                 if (
                     char == "M"
@@ -104,6 +140,8 @@ def tokenize(equation):
                 tokens.append(("NUMBER", m.pi))
             elif func_string == "e":
                 tokens.append(("NUMBER", m.e))
+            elif func_string == "n":
+                tokens.append(("NUMBER", len(n)))
             elif func_string == "ans":
                 tokens.append(("ANS", "ans"))
             else:
@@ -116,4 +154,20 @@ def tokenize(equation):
             raise NameError(f"Unknown character: {char}")
 
         i += 1
-    return tokens
+
+    # merge Unary Minus with the number in basic cases(e.g -5), can't handle more complex cases(e.g -(3+2) or --3)
+    merged = []
+    j = 0
+    while j < len(tokens):
+        if (
+            tokens[j][0] == "UMINUS"
+            and j + 1 < len(tokens)
+            and tokens[j + 1][0] == "NUMBER"
+        ):
+            merged.append(("NUMBER", -tokens[j + 1][1]))
+            j += 2
+        else:
+            merged.append(tokens[j])
+            j += 1
+    return merged
+    # return tokens
