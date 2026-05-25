@@ -7,12 +7,23 @@ import json
 from time import sleep
 
 debug_mode = False
+CYAN = "\033[36m"
+GREEN = "\033[32m"
+YELLOW = "\033[33m"
+MAGENTA = "\033[35m"
+BLUE = "\033[34m"
+RED = "\033[31m"
+RESET = "\033[0m"
 
 
 def boot_up_actions():
-    RED = "\033[31m"
-    RESET = "\033[0m"
-    GREEN = "\033[32m"
+    # CYAN = "\033[36m"
+    # GREEN = "\033[32m"
+    # YELLOW = "\033[33m"
+    # MAGENTA = "\033[35m"
+    # BLUE = "\033[34m"
+    # RED = "\033[31m"
+    # RESET = "\033[0m"
     system("cls" if name == "nt" else "clear")
     print(
         f"{RED}Type 'exit' to exit the program(Retains all data, including previous answer/memory/STAT data){RESET}"
@@ -22,20 +33,21 @@ def boot_up_actions():
     print(
         f"{RED}ALL FUNCTIONS ARE REQUIRED TO HAVE PARENTHESIS FOR THEIR ARGUMENTS(e.g sin(5), log(10), ln(2)){RESET}"
     )
-    print(f"{GREEN}Previous session restored successfully.{RESET}")
+    # print(f"{GREEN}Previous session restored successfully.{RESET}")
 
 
 boot_up_actions()
 
 
 def guide():
-    CYAN = "\033[36m"
-    GREEN = "\033[32m"
-    YELLOW = "\033[33m"
-    MAGENTA = "\033[35m"
-    BLUE = "\033[34m"
-    RED = "\033[31m"
-    RESET = "\033[0m"
+    global CYAN, GREEN, YELLOW, MAGENTA, BLUE, RED, RESET
+    # CYAN = "\033[36m"
+    # GREEN = "\033[32m"
+    # YELLOW = "\033[33m"
+    # MAGENTA = "\033[35m"
+    # BLUE = "\033[34m"
+    # RED = "\033[31m"
+    # RESET = "\033[0m"
 
     print(f"\n\n{CYAN}╔════════════════════════════╗")
     print(f"║     Calculator Guide       ║")
@@ -116,6 +128,9 @@ try:
         ans = state.get("ans", 0)
 except FileNotFoundError:
     pass
+restored = any(v != 0 for v in memory.values()) or len(n) > 0 or ans != 0 or deg != True
+if restored:
+    print(f"{GREEN}Previous session restored successfully.{RESET}")
 atexit.register(save_state)
 
 
@@ -144,6 +159,7 @@ def Stat_Mode(equation):
             break
         elif equation.upper() == "MODE":
             print("STAT mode")
+            print("DEGREES" if deg else "RADIANS")
             continue
         elif equation.upper() == "RESETMEM":
             memory.update({k: 0 for k in memory})
@@ -162,6 +178,7 @@ def Stat_Mode(equation):
             memory.update({k: 0 for k in memory})
             n.clear()
             ans = 0
+            deg = True
             with open("state.json", "w") as f:
                 json.dump({"memory": memory, "n": n}, f)
             for _ in range(3):
@@ -202,7 +219,7 @@ def Stat_Mode(equation):
                     formatted = f"{result:.10g}"
                     if "e" in formatted:
                         mantissa, exp = formatted.split("e")
-                        print(f"= {mantissa} x10^{int(exp)}")
+                        print(f"= {mantissa} x10 {int(exp)}")
                     else:
                         print(f"= {formatted}")
 
@@ -257,6 +274,7 @@ while True:
         continue
     elif equation.upper() == "MODE":
         print("COMP mode")
+        print("DEGREES" if deg else "RADIANS")
         continue
     elif equation.upper() == "RESETMEM":
         memory.update({k: 0 for k in memory})
@@ -275,6 +293,7 @@ while True:
         memory.update({k: 0 for k in memory})
         n.clear()
         ans = 0
+        deg = True
         with open("state.json", "w") as f:
             json.dump({"memory": memory, "n": n}, f)
         for _ in range(3):
@@ -307,8 +326,14 @@ while True:
         evaluated = evaluate(parsed, memory, ans, guide, debug_mode, deg=deg)
         if evaluated:
             try:
-                print(f"= {evaluated[0]:0.10g}")
+                result = evaluated[0]
                 ans = evaluated[0]
+                formatted = f"{result:.10g}"
+                if "e" in formatted:
+                    mantissa, exp = formatted.split("e")
+                    print(f"= {mantissa} x10 {int(exp)}")
+                else:
+                    print(f"= {formatted}")
             except OverflowError:
                 print(evaluated[0])
         else:

@@ -69,10 +69,16 @@ def parse(tokens):
         elif ttype == "VAR":
             output.append(("VAR", value))
 
-        elif ttype in ("STORE", "RECALL"):
-            output.append((ttype, value))
+        # elif ttype in ("STORE", "RECALL"):
+        #     output.append((ttype, value))
 
-        elif ttype in ("MPLUS", "MMINUS"):
+        elif ttype in ("MPLUS", "MMINUS", "STORE", "RECALL"):
+            while ops:
+                top = ops.pop()
+                if isinstance(top, tuple):
+                    output.append(top)
+                else:
+                    output.append(("OP", top))
             output.append((ttype, value))
 
     while ops:

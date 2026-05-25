@@ -21,6 +21,10 @@ stat_list = (
 
 
 def is_command(equation, i):
+    while i < len(equation) and equation[i].isspace():
+        i += 1
+    if equation[i] == "M" and i + 1 < len(equation) and equation[i + 1] in ("+", "-"):
+        return True
     word = ""
     j = i
     while j < len(equation) and (
@@ -48,7 +52,9 @@ def tokenize(equation, n=[]):
             and tokens[-1][0] in ("NUMBER", "RPAREN", "FACT", "VAR")
             and (char == "(" or char.isalpha())
             and not (
-                char == "M" and i + 1 < len(equation) and equation[i + 1] in ("+", "-")
+                equation[i] == "M"
+                and i + 1 < len(equation)
+                and equation[i + 1] in ("+", "-")
             )
             and not is_command(equation, i)
         ):
@@ -120,11 +126,24 @@ def tokenize(equation, n=[]):
                 variable = equation[i]
                 i += 1
                 tokens.append(("STORE" if func_string == "sto" else "RECALL", variable))
+            elif func_string == "ncr":
+                tokens.append(("NCR", "ncr"))
+            elif func_string == "npr":
+                tokens.append(("NPR", "npr"))
+            elif func_string == "pi":
+                tokens.append(("NUMBER", m.pi))
+            elif func_string == "e":
+                tokens.append(("NUMBER", m.e))
+            elif func_string == "n":
+                tokens.append(("NUMBER", len(n)))
+            elif func_string == "ans":
+                tokens.append(("ANS", "ans"))
             elif i < len(equation) and equation[i].isupper():
                 if (
-                    char == "M"
+                    equation[i] == "M"
                     and i + 1 < len(equation)
                     and equation[i + 1] in ("+", "-")
+                    and (i + 2 >= len(equation) or equation[i + 2].isspace())
                 ):
                     variable = equation[i]
                     op = equation[i + 1]
@@ -155,18 +174,6 @@ def tokenize(equation, n=[]):
 
                 number = tokens.pop()
                 tokens.append(("NUMBER", (number[1] * (10**exp))))
-            elif func_string == "ncr":
-                tokens.append(("NCR", "ncr"))
-            elif func_string == "npr":
-                tokens.append(("NPR", "npr"))
-            elif func_string == "pi":
-                tokens.append(("NUMBER", m.pi))
-            elif func_string == "e":
-                tokens.append(("NUMBER", m.e))
-            elif func_string == "n":
-                tokens.append(("NUMBER", len(n)))
-            elif func_string == "ans":
-                tokens.append(("ANS", "ans"))
             else:
                 tokens.append(("FUNC", func_string))
             continue
@@ -192,5 +199,10 @@ def tokenize(equation, n=[]):
         else:
             merged.append(tokens[j])
             j += 1
-    return merged
+
+    # at the end of tokenize, before returning merged:
+    mplus = [t for t in merged if t[0] in ("MPLUS", "MMINUS", "STORE", "RECALL")]
+    rest = [t for t in merged if t[0] not in ("MPLUS", "MMINUS", "STORE", "RECALL")]
+    return rest + mplus
+    # return merged
     # return tokens
