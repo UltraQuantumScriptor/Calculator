@@ -13,6 +13,7 @@ YELLOW = "\033[33m"
 MAGENTA = "\033[35m"
 BLUE = "\033[34m"
 RED = "\033[31m"
+ORANGE = "\033[38;5;208m"
 RESET = "\033[0m"
 
 
@@ -109,6 +110,7 @@ def guide():
     print(
         f"{BLUE}{'Stat Functions:':<20}{RESET} |  n(number of data points added), mean, sumx, sumx2(sum of x squared), sdev, sdev1"
     )
+    print(f"{ORANGE}{'Polar coordinates:':<20}{RESET} |  Cartesian -> Polar(x,y->r,θ)")
 
 
 def save_state():

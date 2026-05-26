@@ -1,6 +1,6 @@
 import math as m
 import statistics as s
-import random as r
+import random
 
 
 def evaluate(rpn, memory, ans, guide, debug_mode=False, n=[], STAT=False, deg=True):
@@ -29,7 +29,7 @@ def evaluate(rpn, memory, ans, guide, debug_mode=False, n=[], STAT=False, deg=Tr
         "atan": lambda x: m.atan(x) * from_rad,
         "log": lambda x: m.log10(x),
         "abs": lambda x: abs(x),
-        "ran": lambda x: (r.random()) * x,
+        "ran": lambda x: (random.random()) * x,
         "ln": lambda x: m.log(x),
         "guide": guide,
     }
@@ -93,6 +93,16 @@ def evaluate(rpn, memory, ans, guide, debug_mode=False, n=[], STAT=False, deg=Tr
             elif value == "ran":
                 arg = stack.pop()
                 stack.append(func_map["ran"](arg))
+            elif value == "pol":
+                y = stack.pop()
+                x = stack.pop()
+                r = m.hypot(x, y)
+                theta = m.degrees(m.atan2(y, x)) if deg else m.atan2(y, x)
+                stack.append(r)
+                print(f"{r:.10g} -> E")
+                print(f"{theta:.10g} -> F")
+                memory["E"] = r
+                memory["F"] = theta
             else:
                 number = stack.pop()
                 if value == "tan" and deg:

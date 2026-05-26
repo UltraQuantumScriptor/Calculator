@@ -155,7 +155,7 @@ def tokenize(equation, n=[]):
             else:
                 tokens.append(("FUNC", func_string))
             continue
-        elif char.isspace():
+        elif char.isspace() or char == ",":
             i += 1
             continue
 
