@@ -1,4 +1,49 @@
+# def is_command(equation, i):
+#     while i < len(equation) and equation[i].isspace():
+#         i += 1
+#     if equation[i] == "M" and i + 1 < len(equation) and equation[i + 1] in ("+", "-"):
+#         return True
+#     word = ""
+#     j = i
+#     while j < len(equation) and (
+#         equation[j].isalpha() and equation[j].islower() or equation[j].isdigit()
+#     ):
+#         word += equation[j]
+#         j += 1
+#     return word in ("sto", "rcl", "ncr", "npr", "ans", "x10")
+
+
+import math as m
+
+
+def insert_implicit_multiplication(tokens):
+    result = []
+
+    for i in range(len(tokens)):
+        a = tokens[i]
+        result.append(a)
+
+        if i + 1 >= len(tokens):
+            continue
+
+        b = tokens[i + 1]
+
+        a_type = a[0]
+        b_type = b[0]
+
+        if a_type in ("NUMBER", "CONSTANT", "RPAREN", "VAR", "FACT") and b_type in (
+            "CONSTANT",
+            "FUNC",
+            "LPAREN",
+            "VAR",
+        ):
+            result.append(("MULTIPLY", "*"))
+
+    return result
+
+
 def parse(tokens):
+    tokens = insert_implicit_multiplication(tokens)
     output = []
     ops = []
 
@@ -16,8 +61,19 @@ def parse(tokens):
     for token in tokens:
         ttype, value = token
 
+        if ops and ops[-1][0] == "FUNC" and ttype != "LPAREN":
+            raise SyntaxError("Functions MUST have parenthesis")
+
         if ttype == "NUMBER":
             output.append((ttype, value))
+
+        elif ttype == "X10":
+            mantissa = output.pop()
+            if mantissa[0] == "CONSTANT":
+                val = m.pi if mantissa[1] == "pi" else m.e
+            else:
+                val = mantissa[1]
+            output.append(("NUMBER", val * (10**value)))
 
         elif ttype in prec:
             while ops:
@@ -38,6 +94,9 @@ def parse(tokens):
                     break
 
             ops.append(ttype)
+
+        elif ttype == "CONSTANT":
+            output.append(("NUMBER", m.pi) if value == "pi" else ("NUMBER", m.e))
 
         elif ttype == "LPAREN":
             # ops.append(("OP", ttype))

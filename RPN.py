@@ -1,8 +1,18 @@
 import math as m
 import statistics as s
+import random as r
 
 
 def evaluate(rpn, memory, ans, guide, debug_mode=False, n=[], STAT=False, deg=True):
+
+    def to_number(x):
+        if isinstance(x, str):
+            try:
+                return float(x)
+            except:
+                raise TypeError(f"Invalid numeric value: {x}")
+        return x
+
     if debug_mode:
         print("RPN Stack Track:\n")
     stack = []
@@ -18,6 +28,8 @@ def evaluate(rpn, memory, ans, guide, debug_mode=False, n=[], STAT=False, deg=Tr
         "acos": lambda x: m.acos(x) * from_rad,
         "atan": lambda x: m.atan(x) * from_rad,
         "log": lambda x: m.log10(x),
+        "abs": lambda x: abs(x),
+        "ran": lambda x: (r.random()) * x,
         "ln": lambda x: m.log(x),
         "guide": guide,
     }
@@ -31,10 +43,12 @@ def evaluate(rpn, memory, ans, guide, debug_mode=False, n=[], STAT=False, deg=Tr
     }
     for debug_num, token in enumerate(rpn):
         ttype, value = token
+        if ttype == "NUMBER" and not isinstance(value, (int, float)):
+            raise TypeError(f"Invalid NUMBER token: {value}")
         if value == "exit":
             exit()
         if ttype == "NUMBER":
-            stack.append(value)
+            stack.append(to_number(value))
         elif ttype == "FACT":
             stack.append(m.factorial(int(stack.pop())))
         elif ttype == "ANS":
@@ -76,27 +90,31 @@ def evaluate(rpn, memory, ans, guide, debug_mode=False, n=[], STAT=False, deg=Tr
             elif value in ("recall", "rcl"):
                 for cell, num in memory.items():
                     print(f"{cell}: {num}")
+            elif value == "ran":
+                arg = stack.pop()
+                stack.append(func_map["ran"](arg))
             else:
                 number = stack.pop()
                 if value == "tan" and deg:
                     if abs(number % 180 - 90) < 1e-9:
                         raise ValueError("tan(90) is undefined")
-                stack.append(func_map[value](number))
+                number = to_number(number)
+                stack.append(func_map[value](number))  # type: ignore
         elif ttype == "STAT_FUNC":
             if not STAT:
                 raise SyntaxError("Function available in STAT mode only")
-            stack.append(stat_func_map[value]())
+            stack.append(stat_func_map[value]())  # type: ignore
 
         elif ttype == "OP":
             if value == "UMINUS":
-                stack.append(-stack.pop())
+                stack.append(to_number(-stack.pop()))
             else:
 
                 if len(stack) < 2:
                     # raise ValueError(f"Invalid RPN: stack too small at {token}.")
                     raise ValueError(f"Invalid Expression for {token[1]}")
-                b = stack.pop()
-                a = stack.pop()
+                b = to_number(stack.pop())
+                a = to_number(stack.pop())
 
                 if value == "PLUS":
                     result = a + b

@@ -71,6 +71,8 @@ def guide():
     print(f"{GREEN}{'Logarithms:':<20}{RESET} |  log(base 10), ln(natural log)")
     print(f"{GREEN}{'Negative numbers:':<20}{RESET} |  -3, --3")
     print(f"{GREEN}{'Parentheses:':<20}{RESET} |  (2+3)*4")
+    print(f"{GREEN}{'Random number:':<20}{RESET} |  ran(5) -> random number 0-5")
+    print(f"{GREEN}{'Absolute:':<20}{RESET} |  abs(-5) -> 5")
 
     print(f"{YELLOW}{'Scientific Notation:':<20}{RESET} |  X x10 Y (5 x10 5 = 500000)")
     print(f"{YELLOW}{'Constants:':<20}{RESET} |  pi & e")
@@ -96,7 +98,7 @@ def guide():
     print(f"{RED}{'RESET ALL:':<20}{RESET} |  RESETALL (Mode still remains)")
 
     print(
-        f"{BLUE}{'Modes:':<20}{RESET} |  type 'mode' to view the current mode you're in"
+        f"{BLUE}{'Modes:':<20}{RESET} |  type 'mode' to view the current mode & angular unit you're in"
     )
     print(f"{BLUE}{'Stat Mode:':<20}{RESET} |  type 'stat' to enter statistic mode")
     print(f"{BLUE}{'Comp Mode:':<20}{RESET} |  type 'comp' to enter computational mode")
@@ -127,6 +129,8 @@ try:
         deg = state.get("deg", True)
         ans = state.get("ans", 0)
 except FileNotFoundError:
+    pass
+except json.JSONDecodeError:
     pass
 restored = any(v != 0 for v in memory.values()) or len(n) > 0 or ans != 0 or deg != True
 if restored:
@@ -219,7 +223,7 @@ def Stat_Mode(equation):
                     formatted = f"{result:.10g}"
                     if "e" in formatted:
                         mantissa, exp = formatted.split("e")
-                        print(f"= {mantissa} x10 {int(exp)}")
+                        print(f"= {mantissa}x10{exp}")
                     else:
                         print(f"= {formatted}")
 
@@ -331,7 +335,7 @@ while True:
                 formatted = f"{result:.10g}"
                 if "e" in formatted:
                     mantissa, exp = formatted.split("e")
-                    print(f"= {mantissa} x10 {int(exp)}")
+                    print(f"= {mantissa}x10{exp}")
                 else:
                     print(f"= {formatted}")
             except OverflowError:

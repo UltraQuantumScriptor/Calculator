@@ -1,4 +1,5 @@
 import math as m
+import re
 
 comp_list = (
     "sin",
@@ -8,6 +9,7 @@ comp_list = (
     "acos",
     "atan",
     "log",
+    "abs",
     "ln",
 )
 
@@ -20,45 +22,24 @@ stat_list = (
 )
 
 
-def is_command(equation, i):
-    while i < len(equation) and equation[i].isspace():
-        i += 1
-    if equation[i] == "M" and i + 1 < len(equation) and equation[i + 1] in ("+", "-"):
-        return True
-    word = ""
-    j = i
-    while j < len(equation) and (
-        equation[j].isalpha() and equation[j].islower() or equation[j].isdigit()
-    ):
-        word += equation[j]
-        j += 1
-    return word in ("sto", "rcl", "ncr", "npr", "ans", "x10")
-
-
 def tokenize(equation, n=[]):
     tokens = []
+    NUMBER_PATTERN = r"[0-9]*\.?[0-9]+(?:[eE][+-]?[0-9]+)?"
     i = 0
     while i < len(equation):
+        match = re.match(NUMBER_PATTERN, equation[i:])
+        if match:
+            num = match.group(0)
+            tokens.append(("NUMBER", float(num)))
+            i += len(num)
+            continue
         char = equation[i]
-
-        if tokens and tokens[-1][0] == "FUNC" and char != "(":
-            raise SyntaxError("Functions MUST have parenthesis")
 
         # if char.isalpha():
         #     print(f"is_command check: '{char}' → {is_command(equation, i)}")
-
-        if (
-            tokens
-            and tokens[-1][0] in ("NUMBER", "RPAREN", "FACT", "VAR")
-            and (char == "(" or char.isalpha())
-            and not (
-                equation[i] == "M"
-                and i + 1 < len(equation)
-                and equation[i + 1] in ("+", "-")
-            )
-            and not is_command(equation, i)
-        ):
-            tokens.append(("MULTIPLY", "*"))
+        # print(f"i={i} | last={tokens[-1] if tokens else None} | char='{char}'")
+        # if tokens and tokens[-1][0] == "FUNC" and char != "(":
+        #     raise SyntaxError("Functions MUST have parenthesis")
 
         if char.isdigit():
             num_string = ""
@@ -78,7 +59,6 @@ def tokenize(equation, n=[]):
                 "DIVIDE",
                 "POW",
                 "LPAREN",
-                "RPAREN",
                 "UMINUS",
                 "NCR",
                 "NPR",
@@ -131,9 +111,9 @@ def tokenize(equation, n=[]):
             elif func_string == "npr":
                 tokens.append(("NPR", "npr"))
             elif func_string == "pi":
-                tokens.append(("NUMBER", m.pi))
+                tokens.append(("CONSTANT", "pi"))
             elif func_string == "e":
-                tokens.append(("NUMBER", m.e))
+                tokens.append(("CONSTANT", "e"))
             elif func_string == "n":
                 tokens.append(("NUMBER", len(n)))
             elif func_string == "ans":
@@ -171,14 +151,13 @@ def tokenize(equation, n=[]):
                     exp_string += equation[i]
                     i += 1
                 exp = int(exp_string) if exp_string else 0
-
-                number = tokens.pop()
-                tokens.append(("NUMBER", (number[1] * (10**exp))))
+                tokens.append(("X10", exp))
             else:
                 tokens.append(("FUNC", func_string))
             continue
-        elif char.isspace:
-            pass
+        elif char.isspace():
+            i += 1
+            continue
 
         else:
             raise NameError(f"Unknown character: {char}")
@@ -200,7 +179,6 @@ def tokenize(equation, n=[]):
             merged.append(tokens[j])
             j += 1
 
-    # at the end of tokenize, before returning merged:
     mplus = [t for t in merged if t[0] in ("MPLUS", "MMINUS", "STORE", "RECALL")]
     rest = [t for t in merged if t[0] not in ("MPLUS", "MMINUS", "STORE", "RECALL")]
     return rest + mplus
