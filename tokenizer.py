@@ -78,6 +78,8 @@ def tokenize(equation, n=[]):
             tokens.append(("RPAREN", ")"))
         elif char == "!":
             tokens.append(("FACT", "!"))
+        elif char == ";":
+            tokens.append(("SEMICOL", ";"))
 
         elif char.isalpha():
             func_string = ""

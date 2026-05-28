@@ -48,6 +48,7 @@ def parse(tokens):
     ops = []
 
     prec = {
+        "SEMICOL": 0.5,
         "PLUS": 1,
         "MINUS": 1,
         "NCR": 2,
@@ -55,7 +56,7 @@ def parse(tokens):
         "MULTIPLY": 3,
         "DIVIDE": 3,
         "POW": 4,
-        "UMINUS": 5,
+        "UMINUS": 6,
     }
 
     for token in tokens:

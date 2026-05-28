@@ -21,6 +21,8 @@ def evaluate(rpn, memory, ans, guide, debug_mode=False, n=[], STAT=False, deg=Tr
     from_rad = (180 / m.pi) if deg else 1
 
     func_map = {
+        "sqrt": lambda x: m.sqrt(x),
+        "cbrt": lambda x: m.cbrt(x),
         "sin": lambda x: m.sin(x * to_rad),
         "cos": lambda x: m.cos(x * to_rad),
         "tan": lambda x: m.tan(x * to_rad),
@@ -70,10 +72,15 @@ def evaluate(rpn, memory, ans, guide, debug_mode=False, n=[], STAT=False, deg=Tr
                 if stack:
                     val = stack.pop()
                     for idx in range(len(n) - 1, -1, -1):
-                        if n[idx] == val:
+                        if abs(n[idx] - val) < 1e-9:
                             n.pop(idx)
+                            print(f"Removed {val}")
                             stack.append(len(n))
                             break
+                    else:
+                        print(f"Couldn't find {val}")
+                        stack.append(len(n))
+                        continue
                 else:
                     if n:
                         n.pop()
@@ -94,15 +101,39 @@ def evaluate(rpn, memory, ans, guide, debug_mode=False, n=[], STAT=False, deg=Tr
                 arg = stack.pop()
                 stack.append(func_map["ran"](arg))
             elif value == "pol":
+
                 y = stack.pop()
                 x = stack.pop()
+
                 r = m.hypot(x, y)
                 theta = m.degrees(m.atan2(y, x)) if deg else m.atan2(y, x)
+
                 stack.append(r)
-                print(f"{r:.10g} -> E")
-                print(f"{theta:.10g} -> F")
+
                 memory["E"] = r
                 memory["F"] = theta
+
+                print(f"{r:.10g} -> E")
+                print(f"{theta:.10g} -> F")
+
+            elif value == "rec":
+                theta = stack.pop()
+                r = stack.pop()
+
+                if deg:
+                    theta = m.radians(theta)
+
+                x = r * m.cos(theta)
+                y = r * m.sin(theta)
+
+                stack.append(x)
+
+                memory["E"] = x
+                memory["F"] = y
+
+                print(f"{x:.10g} -> E")
+                print(f"{y:.10g} -> F")
+
             else:
                 number = stack.pop()
                 if value == "tan" and deg:
@@ -155,6 +186,10 @@ def evaluate(rpn, memory, ans, guide, debug_mode=False, n=[], STAT=False, deg=Tr
                     stack.append(result)
         if debug_mode:
             print(f"{debug_num}  {token} → {stack}")
+
+    if isinstance(stack[0], complex):
+        stack.pop()  # remove the complex number
+        raise ValueError("Complex result not supported")
 
     if len(stack) > 1:
         raise SyntaxError("Invalid expression")
